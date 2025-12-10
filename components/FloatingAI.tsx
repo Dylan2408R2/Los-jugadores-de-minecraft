@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, X, Minus, Send, Maximize2 } from 'lucide-react';
+import { Bot, X, Minus, Send, Maximize2, AlertTriangle } from 'lucide-react';
 import { Message, User } from '../types';
 import { sendToAI, initializeAIChat } from '../services/geminiService';
 
@@ -16,7 +16,10 @@ const FloatingAI: React.FC<FloatingAIProps> = ({ currentUser }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Attempt initialization
     initializeAIChat(currentUser.username);
+    
+    // Set initial welcome message
     setMessages([{
       id: 'ai-welcome',
       text: `Hola ${currentUser.username}, soy tu asistente personal IA. ¿En qué puedo ayudarte hoy?`,
@@ -75,6 +78,11 @@ const FloatingAI: React.FC<FloatingAIProps> = ({ currentUser }) => {
       }
     } catch (err) {
       console.error(err);
+      setMessages(prev => prev.map(msg => 
+        msg.id === botMsgId 
+          ? { ...msg, text: "Error de conexión.", isTyping: false } 
+          : msg
+      ));
     } finally {
       setIsLoading(false);
     }

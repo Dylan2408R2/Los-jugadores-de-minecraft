@@ -1,14 +1,36 @@
 import { GoogleGenAI, Chat } from "@google/genai";
 
 let aiChatSession: Chat | null = null;
+let aiClient: GoogleGenAI | null = null;
 
-const API_KEY = process.env.API_KEY || '';
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+// Safely retrieve API Key without crashing in browser environments where 'process' is undefined
+const getApiKey = (): string => {
+  try {
+    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+      return process.env.API_KEY;
+    }
+  } catch (e) {
+    // Ignore ReferenceError if process is not defined
+  }
+  return '';
+};
 
 // Initialize the personal AI assistant
 export const initializeAIChat = (username: string) => {
+  const apiKey = getApiKey();
+  
+  if (!apiKey) {
+    console.warn("Gemini API Key missing. AI features disabled.");
+    return;
+  }
+
   try {
-    aiChatSession = ai.chats.create({
+    // Lazy initialization: Only create client when needed and key exists
+    if (!aiClient) {
+      aiClient = new GoogleGenAI({ apiKey });
+    }
+
+    aiChatSession = aiClient.chats.create({
       model: 'gemini-2.5-flash',
       config: {
         systemInstruction: `Eres un asistente de IA personal, útil y amigable para el usuario "${username}". 
@@ -20,13 +42,19 @@ export const initializeAIChat = (username: string) => {
 
   } catch (error) {
     console.error("Error initializing AI Chat:", error);
+    aiChatSession = null;
   }
 };
 
 // Stream messages for the personal AI assistant window
 export const sendToAI = async function* (message: string): AsyncGenerator<string, void, unknown> {
   if (!aiChatSession) {
-    yield "Error: Asistente no inicializado.";
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      yield "⚠️ La IA está desactivada porque no se detectó una API Key en la configuración.";
+    } else {
+      yield "Error: No se pudo conectar con el asistente.";
+    }
     return;
   }
 
