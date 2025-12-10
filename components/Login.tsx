@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Lock, ArrowRight, UserPlus, LogIn } from 'lucide-react';
+import { User, Lock, ArrowRight, UserPlus, LogIn, Github, Loader2 } from 'lucide-react';
 
 interface LoginProps {
   onLogin: (username: string) => void;
@@ -11,6 +11,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isGithubLoading, setIsGithubLoading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +58,20 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }
   };
 
+  const handleGithubLogin = () => {
+    setIsGithubLoading(true);
+    setError('');
+    
+    // Simulating OAuth delay
+    setTimeout(() => {
+      setIsGithubLoading(false);
+      // We prefix with gh_ to identify github users in the main app logic if needed
+      // In a real app, this would come from the OAuth provider
+      const mockGithubUser = "Dev_GitHub_" + Math.floor(Math.random() * 1000);
+      onLogin(mockGithubUser);
+    }, 1500);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
       <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01]">
@@ -76,15 +91,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-300 ml-1">Nombre de usuario</label>
             <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User className="h-5 w-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
-              </div>
+              <User className="absolute left-3 top-3 w-5 h-5 text-slate-400 group-focus-within:text-blue-400 transition-colors" />
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Ej. Alex123"
+                className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                placeholder="Tu nombre de usuario"
               />
             </div>
           </div>
@@ -92,64 +105,67 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-300 ml-1">Contraseña</label>
             <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
-              </div>
+              <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-400 group-focus-within:text-blue-400 transition-colors" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                 placeholder="••••••••"
               />
             </div>
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg p-3 text-center animate-pulse">
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center animate-shake">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-sm rounded-lg p-3 text-center">
+            <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm text-center">
               {success}
             </div>
           )}
 
           <button
             type="submit"
-            className={`w-full flex items-center justify-center py-3 px-4 font-bold rounded-xl shadow-lg text-white transition-all transform hover:-translate-y-0.5 active:translate-y-0 ${
-              isRegistering 
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 shadow-purple-600/30' 
-                : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-blue-600/30'
-            }`}
+            className={`w-full py-3 px-4 rounded-xl text-white font-medium transition-all transform active:scale-95 flex items-center justify-center gap-2
+              ${isRegistering 
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 shadow-lg shadow-purple-500/25' 
+                : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 shadow-lg shadow-blue-500/25'
+              }`}
           >
-            <span>{isRegistering ? 'Registrarse' : 'Entrar al Chat'}</span>
-            <ArrowRight className="ml-2 h-5 w-5" />
+            {isRegistering ? 'Registrarse' : 'Iniciar Sesión'}
+            <ArrowRight className="w-5 h-5" />
           </button>
         </form>
-        
+
+        <div className="my-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-slate-700"></div>
+          <span className="text-slate-500 text-xs uppercase tracking-wider">O continuar con</span>
+          <div className="h-px flex-1 bg-slate-700"></div>
+        </div>
+
+        <button
+          onClick={handleGithubLogin}
+          disabled={isGithubLoading}
+          className="w-full py-2.5 px-4 rounded-xl bg-slate-900 border border-slate-700 hover:bg-slate-800 text-white transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          {isGithubLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <Github className="w-5 h-5 group-hover:text-white transition-colors" />
+          )}
+          <span>GitHub</span>
+        </button>
+
         <div className="mt-6 text-center">
-          <button 
-            onClick={() => {
-              setIsRegistering(!isRegistering);
-              setError('');
-              setSuccess('');
-            }}
-            className="text-sm text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto"
+          <button
+            onClick={() => setIsRegistering(!isRegistering)}
+            className="text-slate-400 hover:text-white text-sm transition-colors"
           >
-            {isRegistering ? (
-              <>
-                <LogIn className="w-4 h-4" />
-                ¿Ya tienes cuenta? Inicia sesión
-              </>
-            ) : (
-              <>
-                <UserPlus className="w-4 h-4" />
-                ¿No tienes cuenta? Regístrate
-              </>
-            )}
+            {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
           </button>
         </div>
       </div>
